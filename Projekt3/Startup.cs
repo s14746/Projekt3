@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Projekt3.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Projekt3.Models;
 
 namespace Projekt3
 {
@@ -41,6 +42,9 @@ namespace Projekt3
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddDbContext<Projekt3Context>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("Projekt3Context")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
