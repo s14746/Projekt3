@@ -14,8 +14,8 @@ namespace Projekt3.Models
         {
         }
 
-        public DbSet<Projekt3.Models.Author> Author { get; set; }
+        public DbSet<Author> Author { get; set; }
 
-        public DbSet<Projekt3.Models.Book> Book { get; set; }
+        public DbSet<Book> Book { get; set; }
     }
 }

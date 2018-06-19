@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Projekt3.Models;
 
@@ -19,21 +15,20 @@ namespace Projekt3.Views
         }
 
         // GET: Authors
-        public async Task<IActionResult> Index()
+        public ActionResult Index()
         {
-            return View(await _context.Author.ToListAsync());
+            return View(_context.Author.ToList());
         }
 
         // GET: Authors/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public ActionResult Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var author = await _context.Author
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var author = _context.Author.Find(id);
             if (author == null)
             {
                 return NotFound();
@@ -43,7 +38,7 @@ namespace Projekt3.Views
         }
 
         // GET: Authors/Create
-        public IActionResult Create()
+        public ActionResult Create()
         {
             return View();
         }
@@ -53,26 +48,26 @@ namespace Projekt3.Views
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Name,LastName")] Author author)
+        public ActionResult Create([Bind("ID,Name,LastName")] Author author)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(author);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
             return View(author);
         }
 
         // GET: Authors/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public ActionResult Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var author = await _context.Author.FindAsync(id);
+            var author = _context.Author.Find(id);
             if (author == null)
             {
                 return NotFound();
@@ -85,9 +80,9 @@ namespace Projekt3.Views
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Name,LastName")] Author author)
+        public ActionResult Edit(int id, [Bind("ID,Name,LastName")] Author author)
         {
-            if (id != author.ID)
+            if (id != author.authorId)
             {
                 return NotFound();
             }
@@ -97,11 +92,11 @@ namespace Projekt3.Views
                 try
                 {
                     _context.Update(author);
-                    await _context.SaveChangesAsync();
+                    _context.SaveChanges();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AuthorExists(author.ID))
+                    if (!AuthorExists(author.authorId))
                     {
                         return NotFound();
                     }
@@ -116,15 +111,14 @@ namespace Projekt3.Views
         }
 
         // GET: Authors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public ActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var author = await _context.Author
-                .FirstOrDefaultAsync(m => m.ID == id);
+            var author = _context.Author.Find(id);
             if (author == null)
             {
                 return NotFound();
@@ -136,17 +130,17 @@ namespace Projekt3.Views
         // POST: Authors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public ActionResult DeleteConfirmed(int id)
         {
-            var author = await _context.Author.FindAsync(id);
+            var author = _context.Author.Find(id);
             _context.Author.Remove(author);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AuthorExists(int id)
+        private bool AuthorExists(int authorId)
         {
-            return _context.Author.Any(e => e.ID == id);
+            return _context.Author.Any(e => e.authorId == authorId);
         }
     }
 }
