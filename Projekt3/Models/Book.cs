@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
-
-namespace Projekt3.Models
+﻿namespace Projekt3.Models
 {
     public class Book
     {

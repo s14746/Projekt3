@@ -1,15 +1,16 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Projekt3.Data;
 using Projekt3.Models;
 
 namespace Projekt3.Views
 {
     public class AuthorsController : Controller
     {
-        private readonly Projekt3Context _context;
+        private readonly ApplicationDbContext _context;
 
-        public AuthorsController(Projekt3Context context)
+        public AuthorsController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -80,9 +81,9 @@ namespace Projekt3.Views
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, [Bind("ID,Name,LastName")] Author author)
+        public ActionResult Edit(int authorId, [Bind("authorId,Name,LastName")] Author author)
         {
-            if (id != author.authorId)
+            if (authorId != author.authorId)
             {
                 return NotFound();
             }

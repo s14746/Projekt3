@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Projekt3.Models;
 
 namespace Projekt3.Data
 {
@@ -12,5 +10,9 @@ namespace Projekt3.Data
             : base(options)
         {
         }
+
+        public DbSet<Author> Author { get; set; }
+
+        public DbSet<Book> Book { get; set; }
     }
 }

@@ -2,15 +2,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Projekt3.Data;
 using Projekt3.Models;
 
 namespace Projekt3.Views
 {
     public class BooksController : Controller
     {
-        private readonly Projekt3Context _context;
+        private readonly ApplicationDbContext _context;
 
-        public BooksController(Projekt3Context context)
+        public BooksController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -30,7 +31,7 @@ namespace Projekt3.Views
                 return NotFound();
             }
 
-            Book book = _context.Book.Include(b => b.Author).First();
+            Book book = _context.Book.Include(b => b.Author).Where(b => b.bookId == id).First();
 
             if (book == null)
             {
@@ -43,6 +44,7 @@ namespace Projekt3.Views
         // GET: Books/Create
         public ActionResult Create()
         {
+            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name");
             return View();
         }
 
@@ -51,7 +53,7 @@ namespace Projekt3.Views
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("ID,Title,Publisher,PublicationDate")] Book book)
+        public ActionResult Create([Bind("Title,Publisher,PublicationDate,AuthorId")] Book book)
         {
             if (ModelState.IsValid)
             {
@@ -59,6 +61,7 @@ namespace Projekt3.Views
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name");
             return View(book);
         }
 
@@ -70,11 +73,13 @@ namespace Projekt3.Views
                 return NotFound();
             }
 
-            var book = _context.Book.Find(id);
+            Book book = _context.Book.Include(b => b.Author).Where(b => b.bookId == id).First();
             if (book == null)
             {
                 return NotFound();
             }
+
+            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name", book.Author.authorId);
             return View(book);
         }
 
@@ -83,7 +88,7 @@ namespace Projekt3.Views
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int bookId, [Bind("bookId,Title,Publisher,PublicationDate")] Book book)
+        public ActionResult Edit(int bookId, [Bind("bookId,Title,Publisher,PublicationDate,AuthorId")] Book book)
         {
             if (bookId != book.bookId)
             {
@@ -110,6 +115,7 @@ namespace Projekt3.Views
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name");
             return View(book);
         }
 
