@@ -1,147 +1,90 @@
-﻿using System.Linq;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Projekt3.Data;
 using Projekt3.Models;
+using Projekt3.Repositories;
 
 namespace Projekt3.Views
 {
     public class AuthorsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AuthorsRepository authorsRepository;
 
-        public AuthorsController(ApplicationDbContext context)
+        public AuthorsController(AuthorsRepository authorsRepository)
         {
-            _context = context;
+            this.authorsRepository = authorsRepository;
         }
 
+        [Authorize(Roles = "user, admin")]
         // GET: Authors
         public ActionResult Index()
         {
-            return View(_context.Author.ToList());
+            return View(authorsRepository.FindAll());
         }
 
+        [Authorize(Roles = "user, admin")]
         // GET: Authors/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var author = _context.Author.Find(id);
-            if (author == null)
-            {
-                return NotFound();
-            }
-
-            return View(author);
+            return View(authorsRepository.FindById(id));
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Authors/Create
         public ActionResult Create()
         {
             return View();
         }
 
+        [Authorize(Roles = "admin")]
         // POST: Authors/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind("ID,Name,LastName")] Author author)
+        public ActionResult Create([Bind("Name,LastName")] Author author)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(author);
-                _context.SaveChanges();
+                authorsRepository.Save(author);
                 return RedirectToAction(nameof(Index));
             }
             return View(author);
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Authors/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var author = _context.Author.Find(id);
-            if (author == null)
-            {
-                return NotFound();
-            }
-            return View(author);
+            return View(authorsRepository.FindById(id));
         }
 
+        [Authorize(Roles = "admin")]
         // POST: Authors/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int authorId, [Bind("authorId,Name,LastName")] Author author)
         {
-            if (authorId != author.authorId)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(author);
-                    _context.SaveChanges();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AuthorExists(author.authorId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                authorsRepository.Save(author);
                 return RedirectToAction(nameof(Index));
             }
             return View(author);
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Authors/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var author = _context.Author.Find(id);
-            if (author == null)
-            {
-                return NotFound();
-            }
-
-            return View(author);
+            return View(authorsRepository.FindById(id));
         }
 
+        [Authorize(Roles = "admin")]
         // POST: Authors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            var author = _context.Author.Find(id);
-            _context.Author.Remove(author);
-            _context.SaveChanges();
+            authorsRepository.Delete(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool AuthorExists(int authorId)
-        {
-            return _context.Author.Any(e => e.authorId == authorId);
         }
     }
 }

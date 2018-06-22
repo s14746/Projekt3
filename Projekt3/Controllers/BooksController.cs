@@ -1,155 +1,104 @@
-﻿using System.Linq;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Projekt3.Data;
+using Projekt3.Helpers;
 using Projekt3.Models;
+using Projekt3.Repositories;
 
 namespace Projekt3.Views
 {
     public class BooksController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly BooksRepository booksRepository;
+        private readonly AuthorsRepository authorsRepository;
+        private readonly AuthorsHelper authorsHelper;
 
-        public BooksController(ApplicationDbContext context)
+        public BooksController(
+            BooksRepository booksRepository,
+            AuthorsRepository authorsRepository,
+            AuthorsHelper authorsHelper)
         {
-            _context = context;
+            this.booksRepository = booksRepository;
+            this.authorsHelper = authorsHelper;
+            this.authorsRepository = authorsRepository;
         }
 
+        [Authorize(Roles = "user, admin")]
         // GET: Books
         public ActionResult Index()
         {
-            var books = _context.Book.Include(b => b.Author);
-            return View(books.ToList());
+            return View(booksRepository.FindAll());
         }
 
+        [Authorize(Roles = "user, admin")]
         // GET: Books/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            Book book = _context.Book.Include(b => b.Author).Where(b => b.bookId == id).First();
-
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            return View(book);
+            return View(booksRepository.FindById(id));
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Books/Create
         public ActionResult Create()
         {
-            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name");
+            ViewBag.AuthorId = authorsHelper.ToSelectList(authorsRepository.FindAll());
             return View();
         }
 
+        [Authorize(Roles = "admin")]
         // POST: Books/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind("Title,Publisher,PublicationDate,AuthorId")] Book book)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(book);
-                _context.SaveChanges();
+                booksRepository.Save(book);
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name");
+            ViewBag.AuthorId = authorsHelper.ToSelectList(authorsRepository.FindAll());
             return View(book);
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Books/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            Book book = _context.Book.Include(b => b.Author).Where(b => b.bookId == id).First();
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name", book.Author.authorId);
+            var book = booksRepository.FindById(id);
+            ViewBag.AuthorId = authorsHelper.ToSelectList(authorsRepository.FindAll(), book.Author.authorId);
             return View(book);
         }
 
+        [Authorize(Roles = "admin")]
         // POST: Books/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int bookId, [Bind("bookId,Title,Publisher,PublicationDate,AuthorId")] Book book)
         {
-            if (bookId != book.bookId)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(book);
-                    _context.SaveChanges();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BookExists(book.bookId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                booksRepository.Save(book);
                 return RedirectToAction(nameof(Index));
             }
-            ViewBag.AuthorId = new SelectList(_context.Author.ToList(), "authorId", "Name");
+            ViewBag.AuthorId = authorsHelper.ToSelectList(authorsRepository.FindAll());
             return View(book);
         }
 
+        [Authorize(Roles = "admin")]
         // GET: Books/Delete/5
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var book = _context.Book.Find(id);
-            if (book == null)
-            {
-                return NotFound();
-            }
-
-            return View(book);
+            return View(booksRepository.FindById(id));
         }
 
+        [Authorize(Roles = "admin")]
         // POST: Books/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            var book = _context.Book.Find(id);
-            _context.Book.Remove(book);
-            _context.SaveChanges();
+            booksRepository.Delete(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool BookExists(int id)
-        {
-            return _context.Book.Any(e => e.bookId == id);
         }
     }
 }

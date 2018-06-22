@@ -20,7 +20,7 @@ namespace Projekt3.Models
         public string ConfirmPassword { get; set; }
 
         [Required]
-        [Display(Name = "UserRoles")]
-        public string UserRoles { get; set; }
+        [Display(Name = "UserRole")]
+        public string UserRole { get; set; }
     }
 }

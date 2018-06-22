@@ -1,8 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Projekt3.Data;
@@ -12,49 +10,48 @@ namespace Projekt3.Controllers
 {
     public class RegisterController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
+        private readonly UserManager<IdentityUser> userManager;
+        private readonly SignInManager<IdentityUser> signInManager;
 
         public RegisterController(
             ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager)
         {
-            _context = context;
-            _userManager = userManager;
-            _signInManager = signInManager;
+            this.context = context;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
 
         // GET: Register
-        public ActionResult Register()
+        public ActionResult Index()
         {
-            ViewBag.Name = new SelectList(_context.Roles.ToList(), "Name", "Name");
+            ViewBag.Name = new SelectList(context.Roles.ToList(), "Name", "Name");
             return View();
         }
 
         // POST: Register
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Index(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var user = new IdentityUser { UserName = model.Username };
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var result = await userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    await _userManager.AddToRoleAsync(user, model.UserRoles);
-                    return RedirectToAction("/Books");
+                    await userManager.AddToRoleAsync(user, model.UserRole);
+                    await signInManager.SignInAsync(user, isPersistent: false);
+                    Response.Redirect("/");
                 }
 
                 AddErrors(result);
             }
 
-            ViewBag.Name = new SelectList(_context.Roles.ToList(), "Name", "Name");
+            ViewBag.Name = new SelectList(context.Roles.ToList(), "Name", "Name");
             return View(model);
         }
 
